@@ -4,7 +4,20 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { api } from '../../convex/_generated/api'
 import TalkingHead, { type TalkingHeadHandle } from '../components/TalkingHead'
 
-export const Route = createFileRoute('/')({ component: ChatPage })
+export const Route = createFileRoute('/')({ component: App })
+
+/** SSR-safe wrapper — renders a black placeholder server-side,
+ *  then mounts the real chat UI client-side only. */
+function App() {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+
+  if (!mounted) {
+    return <main className="min-h-screen bg-black" />
+  }
+
+  return <ChatPage />
+}
 
 function ChatPage() {
   const [threadId, setThreadId] = useState<string | null>(null)
@@ -69,7 +82,7 @@ function ChatPage() {
       <div className="border-t border-white/10 bg-black/80 px-4 py-4 backdrop-blur-sm">
         <div className="mx-auto flex max-w-2xl items-end gap-3">
           <textarea
-            className="min-h-[44px] flex-1 resize-none rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-white/30 outline-none transition focus:border-white/20 focus:bg-white/8 disabled:opacity-40"
+            className="min-h-[44px] flex-1 resize-none rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-white/30 outline-none transition focus:border-white/20 disabled:opacity-40"
             placeholder={threadId ? 'Ask something...' : 'Connecting...'}
             value={input}
             onChange={(e) => setInput(e.target.value)}
