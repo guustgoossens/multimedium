@@ -109,11 +109,9 @@ function App() {
 
   return (
     <div className="canvas">
-      {/* Talking head — disabled for now to focus on visual flow
-      <div className="talking-head-bg">
+      <div className="talking-head-side">
         <TalkingHead ref={headRef} />
       </div>
-      */}
 
       <FrameContainer
         explanations={explanations ?? []}
