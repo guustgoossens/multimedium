@@ -10,11 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TestParticlesRouteImport } from './routes/test-particles'
+import { Route as TestDiagramRouteImport } from './routes/test-diagram'
 import { Route as IndexRouteImport } from './routes/index'
 
 const TestParticlesRoute = TestParticlesRouteImport.update({
   id: '/test-particles',
   path: '/test-particles',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TestDiagramRoute = TestDiagramRouteImport.update({
+  id: '/test-diagram',
+  path: '/test-diagram',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -25,27 +31,31 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/test-diagram': typeof TestDiagramRoute
   '/test-particles': typeof TestParticlesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/test-diagram': typeof TestDiagramRoute
   '/test-particles': typeof TestParticlesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/test-diagram': typeof TestDiagramRoute
   '/test-particles': typeof TestParticlesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/test-particles'
+  fullPaths: '/' | '/test-diagram' | '/test-particles'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/test-particles'
-  id: '__root__' | '/' | '/test-particles'
+  to: '/' | '/test-diagram' | '/test-particles'
+  id: '__root__' | '/' | '/test-diagram' | '/test-particles'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  TestDiagramRoute: typeof TestDiagramRoute
   TestParticlesRoute: typeof TestParticlesRoute
 }
 
@@ -56,6 +66,13 @@ declare module '@tanstack/react-router' {
       path: '/test-particles'
       fullPath: '/test-particles'
       preLoaderRoute: typeof TestParticlesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/test-diagram': {
+      id: '/test-diagram'
+      path: '/test-diagram'
+      fullPath: '/test-diagram'
+      preLoaderRoute: typeof TestDiagramRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -70,6 +87,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  TestDiagramRoute: TestDiagramRoute,
   TestParticlesRoute: TestParticlesRoute,
 }
 export const routeTree = rootRouteImport
