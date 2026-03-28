@@ -12,6 +12,7 @@ import type * as agent from "../agent.js";
 import type * as chat from "../chat.js";
 import type * as explanations from "../explanations.js";
 import type * as skills from "../skills.js";
+import type * as tts from "../tts.js";
 
 import type {
   ApiFromModules,
@@ -24,6 +25,7 @@ declare const fullApi: ApiFromModules<{
   chat: typeof chat;
   explanations: typeof explanations;
   skills: typeof skills;
+  tts: typeof tts;
 }>;
 
 /**

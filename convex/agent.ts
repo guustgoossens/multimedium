@@ -159,7 +159,7 @@ const renderVisual = createTool({
     step: z.number().optional().describe("Step number"),
   }),
   execute: async (ctx, args): Promise<string> => {
-    await ctx.runMutation(internal.explanations.create, {
+    const explanationId = await ctx.runMutation(internal.explanations.create, {
       threadId: ctx.threadId!,
       messageId: ctx.messageId,
       skill: args.skill,
@@ -167,6 +167,20 @@ const renderVisual = createTool({
       narration: args.narration,
       step: args.step,
     });
+
+    // Generate ElevenLabs audio for narration (non-blocking from user's perspective
+    // since each sub-agent already runs async from the director)
+    if (args.narration) {
+      try {
+        await ctx.runAction(internal.tts.generateAudio, {
+          narration: args.narration,
+          explanationId,
+        });
+      } catch (error) {
+        console.error("[TTS] Audio generation failed, frame will use text fallback:", error);
+      }
+    }
+
     return `Saved: ${args.skill} step ${args.step ?? "?"}`;
   },
 });

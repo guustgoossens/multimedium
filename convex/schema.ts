@@ -42,6 +42,8 @@ export default defineSchema({
     config: v.string(), // JSON string of skill-specific config
     narration: v.optional(v.string()), // text for ElevenLabs TTS
     audioUrl: v.optional(v.string()), // ElevenLabs audio URL
+    audioStorageId: v.optional(v.id("_storage")), // Convex file storage ref for TTS audio
+    audioTimings: v.optional(v.string()), // JSON { words, wtimes, wdurations } for lip-sync
     step: v.optional(v.number()), // for multi-step explanations
     createdAt: v.number(),
   })

@@ -1,7 +1,14 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 
+export interface AudioTimings {
+  words: string[]
+  wtimes: number[]
+  wdurations: number[]
+}
+
 export interface TalkingHeadHandle {
   speak: (text: string) => void
+  speakWithAudio: (audioUrl: string, timings: AudioTimings) => void
 }
 
 const AVATAR_URL = '/avatars/avatarsdk.glb'
@@ -10,10 +17,41 @@ const TalkingHeadComponent = forwardRef<TalkingHeadHandle>((_, ref) => {
   const containerRef = useRef<HTMLDivElement>(null)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const headRef = useRef<any>(null)
+  const audioCtxRef = useRef<AudioContext | null>(null)
+
+  // Lazily create AudioContext (must happen after user gesture)
+  function getAudioContext(): AudioContext {
+    if (!audioCtxRef.current) {
+      audioCtxRef.current = new AudioContext()
+    }
+    if (audioCtxRef.current.state === 'suspended') {
+      audioCtxRef.current.resume()
+    }
+    return audioCtxRef.current
+  }
 
   useImperativeHandle(ref, () => ({
     speak(text: string) {
       headRef.current?.speakText(text, { avatarMute: true })
+    },
+    async speakWithAudio(audioUrl: string, timings: AudioTimings) {
+      if (!headRef.current) return
+      try {
+        const audioCtx = getAudioContext()
+        const response = await fetch(audioUrl)
+        const arrayBuffer = await response.arrayBuffer()
+        const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer)
+
+        headRef.current.speakAudio({
+          audio: audioBuffer,
+          words: timings.words,
+          wtimes: timings.wtimes,
+          wdurations: timings.wdurations,
+        })
+      } catch (err) {
+        console.error('[TalkingHead] speakWithAudio failed, falling back to text:', err)
+        headRef.current?.speakText('', { avatarMute: true })
+      }
     },
   }))
 
@@ -30,13 +68,12 @@ const TalkingHeadComponent = forwardRef<TalkingHeadHandle>((_, ref) => {
         const head = new TalkingHead(container, {
           cameraView: 'head',
           cameraRotateEnable: false,
-          avatarMute: true,
           lipsyncModules: ['en'],
           lipsyncLang: 'en',
         })
 
         await head.showAvatar(
-          { url: AVATAR_URL, lipsyncLang: 'en', avatarMute: true },
+          { url: AVATAR_URL, lipsyncLang: 'en' },
           (e: { lengthComputable: boolean; loaded: number; total: number }) => {
             if (e.lengthComputable) {
               const pct = Math.round((e.loaded / e.total) * 100)

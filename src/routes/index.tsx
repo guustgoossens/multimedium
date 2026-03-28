@@ -24,6 +24,7 @@ function App() {
   const doneCountRef = useRef(0)
   const headRef = useRef<TalkingHeadHandle>(null)
   const spokenCountRef = useRef(0)
+  const audioPlayedIds = useRef(new Set<string>())
 
   const createThread = useAction(api.chat.createNewThread)
   const sendMessage = useAction(api.chat.sendMessageStreaming)
@@ -46,13 +47,27 @@ function App() {
     doneCountRef.current = doneCount
   }, [doneCount])
 
-  // Speak new narrations on the avatar
+  // Speak narrations on the avatar — play ElevenLabs audio when it arrives
   useEffect(() => {
     if (!explanations || !headRef.current) return
+
+    for (const exp of explanations) {
+      const id = exp._id
+
+      // If audio just became available for an explanation we haven't audio-played yet, play it
+      if (exp.audioUrl && exp.audioTimings && !audioPlayedIds.current.has(id)) {
+        audioPlayedIds.current.add(id)
+        headRef.current.speakWithAudio(exp.audioUrl, JSON.parse(exp.audioTimings))
+      }
+    }
+
+    // For brand-new explanations without audio yet, do silent lip-sync as placeholder
     const newOnes = explanations.slice(spokenCountRef.current)
     spokenCountRef.current = explanations.length
     for (const exp of newOnes) {
-      if (exp.narration) headRef.current.speak(exp.narration)
+      if (!exp.audioUrl && exp.narration) {
+        headRef.current.speak(exp.narration)
+      }
     }
   }, [explanations])
 

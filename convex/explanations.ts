@@ -18,6 +18,17 @@ export const create = internalMutation({
   },
 });
 
+export const patchAudio = internalMutation({
+  args: {
+    explanationId: v.id("explanations"),
+    audioStorageId: v.id("_storage"),
+    audioTimings: v.string(),
+  },
+  handler: async (ctx, { explanationId, audioStorageId, audioTimings }) => {
+    await ctx.db.patch(explanationId, { audioStorageId, audioTimings });
+  },
+});
+
 export const markDone = internalMutation({
   args: {
     threadId: v.string(),
@@ -36,10 +47,21 @@ export const markDone = internalMutation({
 export const getByThread = query({
   args: { threadId: v.string() },
   handler: async (ctx, args) => {
-    return await ctx.db
+    const explanations = await ctx.db
       .query("explanations")
       .withIndex("by_thread", (q) => q.eq("threadId", args.threadId))
       .collect();
+
+    // Resolve audio storage IDs to signed URLs
+    return Promise.all(
+      explanations.map(async (exp) => {
+        if (exp.audioStorageId) {
+          const audioUrl = await ctx.storage.getUrl(exp.audioStorageId);
+          return { ...exp, audioUrl: audioUrl ?? exp.audioUrl };
+        }
+        return exp;
+      })
+    );
   },
 });
 
