@@ -37,6 +37,7 @@ const TalkingHeadComponent = forwardRef<TalkingHeadHandle>((_, ref) => {
     },
     stopSpeaking() {
       headRef.current?.stopSpeaking()
+      headRef.current?.setMood('neutral')
     },
     async speakWithAudio(audioUrl: string, timings: AudioTimings) {
       if (!headRef.current) return
@@ -46,12 +47,25 @@ const TalkingHeadComponent = forwardRef<TalkingHeadHandle>((_, ref) => {
         const arrayBuffer = await response.arrayBuffer()
         const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer)
 
-        headRef.current.speakAudio({
-          audio: audioBuffer,
-          words: timings.words,
-          wtimes: timings.wtimes,
-          wdurations: timings.wdurations,
-        })
+        // Set an expressive mood while speaking
+        headRef.current.setMood('happy')
+
+        headRef.current.speakAudio(
+          {
+            audio: audioBuffer,
+            words: timings.words,
+            wtimes: timings.wtimes,
+            wdurations: timings.wdurations,
+          },
+          {},
+          undefined,
+        )
+
+        // Return to neutral when speech ends
+        const durationMs = timings.wtimes.at(-1)! + timings.wdurations.at(-1)!
+        setTimeout(() => {
+          headRef.current?.setMood('neutral')
+        }, durationMs + 500)
       } catch (err) {
         console.error('[TalkingHead] speakWithAudio failed, falling back to text:', err)
         headRef.current?.speakText('', { avatarMute: true })
@@ -74,6 +88,11 @@ const TalkingHeadComponent = forwardRef<TalkingHeadHandle>((_, ref) => {
           cameraRotateEnable: false,
           lipsyncModules: ['en'],
           lipsyncLang: 'en',
+          avatarMood: 'neutral',
+          avatarIdleEyeContact: 0.7,
+          avatarIdleHeadMove: 0.5,
+          avatarSpeakingEyeContact: 0.8,
+          avatarSpeakingHeadMove: 0.7,
         })
 
         await head.showAvatar(
@@ -106,6 +125,8 @@ const TalkingHeadComponent = forwardRef<TalkingHeadHandle>((_, ref) => {
           depthTest: true,
         })
 
+        // Track original→wireframe pairs so we can sync morph targets each frame
+        const morphPairs: Array<{ original: any; clone: any }> = []
         const clones: Array<{ clone: any; parent: any }> = []
 
         head.armature.traverse((child: any) => {
@@ -123,9 +144,28 @@ const TalkingHeadComponent = forwardRef<TalkingHeadHandle>((_, ref) => {
             wireClone.bind(child.skeleton, child.bindMatrix.clone())
           }
           clones.push({ clone: wireClone, parent: child.parent })
+
+          // If mesh has morph targets, track the pair for per-frame sync
+          if (child.morphTargetInfluences?.length) {
+            morphPairs.push({ original: child, clone: wireClone })
+          }
         })
 
         clones.forEach(({ clone, parent }) => parent.add(clone))
+
+        // Sync morph target influences (lip-sync, expressions) from originals
+        // to wireframe clones every frame so they're visible through the wireframe
+        function syncMorphTargets() {
+          for (const { original, clone } of morphPairs) {
+            if (original.morphTargetInfluences && clone.morphTargetInfluences) {
+              for (let i = 0; i < original.morphTargetInfluences.length; i++) {
+                clone.morphTargetInfluences[i] = original.morphTargetInfluences[i]
+              }
+            }
+          }
+          if (!cancelled) requestAnimationFrame(syncMorphTargets)
+        }
+        requestAnimationFrame(syncMorphTargets)
         head.renderer.setClearColor(0x000000, 1)
 
         // Hide loading overlay
