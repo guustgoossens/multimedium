@@ -1,8 +1,8 @@
 /**
  * Chat Actions
  *
- * Frontend-facing actions for creating threads and sending messages.
- * Uses @convex-dev/agent for thread management and streaming.
+ * Frontend-facing actions. Uses the director agent which
+ * orchestrates sub-agents for each visual frame.
  */
 
 import { v } from "convex/values";
@@ -11,7 +11,7 @@ import { createThread, listUIMessages, syncStreams } from "@convex-dev/agent";
 import { vStreamArgs } from "@convex-dev/agent";
 import { paginationOptsValidator } from "convex/server";
 import { components } from "./_generated/api";
-import { visualAgent } from "./agent";
+import { directorAgent } from "./agent";
 
 export const createNewThread = action({
   args: { userId: v.optional(v.string()) },
@@ -29,7 +29,11 @@ export const sendMessage = action({
     prompt: v.string(),
   },
   handler: async (ctx, { threadId, prompt }) => {
-    const result = await visualAgent.generateText(ctx, { threadId }, { prompt });
+    const result = await directorAgent.generateText(
+      ctx,
+      { threadId },
+      { prompt }
+    );
     return result.text;
   },
 });
@@ -40,7 +44,7 @@ export const sendMessageStreaming = action({
     prompt: v.string(),
   },
   handler: async (ctx, { threadId, prompt }) => {
-    await visualAgent.streamText(
+    await directorAgent.streamText(
       ctx,
       { threadId },
       { prompt },
