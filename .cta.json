@@ -1,0 +1,23 @@
+{
+  "projectName": "multimedium",
+  "mode": "file-router",
+  "typescript": true,
+  "packageManager": "bun",
+  "includeExamples": false,
+  "tailwind": true,
+  "addOnOptions": {},
+  "envVarValues": {
+    "CONVEX_DEPLOYMENT": "clever-rat-46",
+    "VITE_CONVEX_URL": "https://clever-rat-46.eu-west-1.convex.cloud"
+  },
+  "git": true,
+  "routerOnly": false,
+  "version": 1,
+  "framework": "react",
+  "chosenAddOns": [
+    "eslint",
+    "workos",
+    "convex",
+    "shadcn"
+  ]
+}
