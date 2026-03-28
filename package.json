@@ -20,7 +20,6 @@
     "@ai-sdk/anthropic": "^3.0.64",
     "@convex-dev/agent": "^0.6.1",
     "@convex-dev/react-query": "0.1.0",
-    "@excalidraw/excalidraw": "^0.18.0",
     "@met4citizen/talkinghead": "^1.7.0",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",

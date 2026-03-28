@@ -28,7 +28,6 @@ RULES:
 
 AVAILABLE SKILLS:
 - manim: Mathematical animations (3Blue1Brown style). Use for equations, graphs, geometry, proofs, step-by-step math.
-- diagram: System diagrams (Excalidraw). Use for concept maps, flowcharts, architecture, relationships.
 - particles: 3D particle simulations. Use for physics forces, waves, fields, molecular behavior.
 - ui: Interactive components. Use for summaries, comparisons, quizzes, AND always for the final "next actions" frame with ActionCards.
 
@@ -47,7 +46,7 @@ const launchVisualAgent = createTool({
         "Detailed prompt for this segment — what to explain, what to show, what to narrate"
       ),
     skill: z
-      .enum(["manim", "diagram", "ui", "particles"])
+      .enum(["manim", "ui", "particles"])
       .describe("Which visual skill the sub-agent should use"),
     step: z
       .number()
@@ -153,7 +152,7 @@ const invokeSkill = createTool({
 const renderVisual = createTool({
   description: `Save a generated visual frame. Call after generating config per skill instructions.`,
   inputSchema: z.object({
-    skill: z.enum(["manim", "diagram", "ui", "particles"]),
+    skill: z.enum(["manim", "ui", "particles"]),
     config: z.string().describe("JSON config for the renderer"),
     narration: z.string().describe("Voice narration for this frame"),
     step: z.number().optional().describe("Step number"),

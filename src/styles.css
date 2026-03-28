@@ -416,22 +416,6 @@ a {
   border-radius: 8px;
 }
 
-/* Hide Excalidraw UI chrome in view mode */
-.excalidraw .App-menu,
-.excalidraw .layer-ui__wrapper__footer,
-.excalidraw .zen-mode-transition,
-.excalidraw .main-menu-trigger,
-.excalidraw .footer-center {
-  display: none !important;
-}
-
-/* Force Excalidraw background to black */
-.excalidraw,
-.excalidraw .layer-ui__wrapper,
-.excalidraw canvas {
-  background: #000 !important;
-  background-color: #000 !important;
-}
 
 @keyframes breathe {
   0%, 100% { opacity: 0.4; }
