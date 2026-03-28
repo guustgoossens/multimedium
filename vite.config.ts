@@ -15,6 +15,13 @@ const config = defineConfig({
     tanstackStart(),
     viteReact(),
   ],
+  optimizeDeps: {
+    exclude: ['@met4citizen/talkinghead'],
+  },
+  ssr: {
+    noExternal: [],
+    external: ['@met4citizen/talkinghead', 'three'],
+  },
 })
 
 export default config
