@@ -71,6 +71,18 @@ function App() {
     }
   }, [explanations])
 
+  // Spacebar stops the avatar speaking (only when input is not focused)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space' && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
+        e.preventDefault()
+        headRef.current?.stopSpeaking()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
   const handleSubmit = useCallback(async (text: string) => {
     if (loadingRef.current) return
     setIsLoading(true)

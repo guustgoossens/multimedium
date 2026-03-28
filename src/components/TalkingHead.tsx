@@ -9,6 +9,7 @@ export interface AudioTimings {
 export interface TalkingHeadHandle {
   speak: (text: string) => void
   speakWithAudio: (audioUrl: string, timings: AudioTimings) => void
+  stopSpeaking: () => void
 }
 
 const AVATAR_URL = '/avatars/avatarsdk.glb'
@@ -33,6 +34,9 @@ const TalkingHeadComponent = forwardRef<TalkingHeadHandle>((_, ref) => {
   useImperativeHandle(ref, () => ({
     speak(text: string) {
       headRef.current?.speakText(text, { avatarMute: true })
+    },
+    stopSpeaking() {
+      headRef.current?.stopSpeaking()
     },
     async speakWithAudio(audioUrl: string, timings: AudioTimings) {
       if (!headRef.current) return
