@@ -12,9 +12,13 @@
     "test": "vitest run",
     "lint": "eslint",
     "format": "prettier --check .",
-    "check": "prettier --write . && eslint --fix"
+    "check": "prettier --write . && eslint --fix",
+    "skills:sync": "bun run src/scripts/skills/sync.ts",
+    "skills:sync:dry": "bun run src/scripts/skills/sync.ts --dry-run"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.64",
+    "@convex-dev/agent": "^0.6.1",
     "@convex-dev/react-query": "0.1.0",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-devtools": "latest",
@@ -24,9 +28,11 @@
     "@tanstack/react-start": "latest",
     "@tanstack/router-plugin": "^1.132.0",
     "@workos-inc/authkit-react": "^0.16.0",
+    "ai": "^6.0.141",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "convex": "^1.32.0",
+    "gray-matter": "^4.0.3",
     "lucide-react": "^0.577.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
