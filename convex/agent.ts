@@ -240,7 +240,7 @@ function subAgentForThread(parentThreadId: string, step: number) {
     inputSchema: renderVisual.inputSchema,
     execute: async (ctx, args): Promise<string> => {
       // Write to the PARENT thread, not the sub-agent's ephemeral thread
-      await ctx.runMutation(internal.explanations.create, {
+      const explanationId = await ctx.runMutation(internal.explanations.create, {
         threadId: parentThreadId,
         messageId: ctx.messageId,
         skill: args.skill,
@@ -248,6 +248,19 @@ function subAgentForThread(parentThreadId: string, step: number) {
         narration: args.narration,
         step: args.step ?? step,
       });
+
+      // Generate ElevenLabs audio for narration
+      if (args.narration) {
+        try {
+          await ctx.runAction(internal.tts.generateAudio, {
+            narration: args.narration,
+            explanationId,
+          });
+        } catch (error) {
+          console.error("[TTS] Audio generation failed:", error);
+        }
+      }
+
       return `Saved: ${args.skill} step ${args.step ?? step}`;
     },
   });
