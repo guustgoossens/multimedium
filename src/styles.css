@@ -348,10 +348,17 @@ a {
   inset: 0;
 }
 
+.talking-head-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
 .frame-container {
   height: 100dvh;
   overflow: hidden;
   position: relative;
+  z-index: 1;
 }
 
 .frame {

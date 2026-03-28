@@ -4,8 +4,17 @@ import { useAction, useQuery } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import { FrameContainer } from '../components/FrameContainer'
 import { PromptInput } from '../components/PromptInput'
+import TalkingHead, { type TalkingHeadHandle } from '../components/TalkingHead'
 
-export const Route = createFileRoute('/')({ component: App })
+export const Route = createFileRoute('/')({ component: AppShell })
+
+/** SSR-safe wrapper — mounts client-only content after hydration */
+function AppShell() {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+  if (!mounted) return <div className="canvas" />
+  return <App />
+}
 
 function App() {
   const [threadId, setThreadId] = useState<string | null>(null)
@@ -13,6 +22,8 @@ function App() {
   const loadingRef = useRef(false)
   const threadRef = useRef<string | null>(null)
   const doneCountRef = useRef(0)
+  const headRef = useRef<TalkingHeadHandle>(null)
+  const spokenCountRef = useRef(0)
 
   const createThread = useAction(api.chat.createNewThread)
   const sendMessage = useAction(api.chat.sendMessageStreaming)
@@ -35,9 +46,23 @@ function App() {
     doneCountRef.current = doneCount
   }, [doneCount])
 
+  // Speak new narrations on the avatar
+  useEffect(() => {
+    if (!explanations || !headRef.current) return
+    const newOnes = explanations.slice(spokenCountRef.current)
+    spokenCountRef.current = explanations.length
+    for (const exp of newOnes) {
+      if (exp.narration) headRef.current.speak(exp.narration)
+    }
+  }, [explanations])
+
   const handleSubmit = useCallback(async (text: string) => {
     if (loadingRef.current) return
     setIsLoading(true)
+
+    // Immediately animate the avatar with user text
+    headRef.current?.speak(text)
+
     try {
       let currentThreadId = threadRef.current
       if (!currentThreadId) {
@@ -57,6 +82,11 @@ function App() {
 
   return (
     <div className="canvas">
+      {/* Talking head behind the frame content */}
+      <div className="talking-head-bg">
+        <TalkingHead ref={headRef} />
+      </div>
+
       <FrameContainer
         explanations={explanations ?? []}
         isLoading={isLoading}
