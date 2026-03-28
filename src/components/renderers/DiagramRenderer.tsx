@@ -39,7 +39,7 @@ export function DiagramRenderer({ config }: { config: DiagramConfig }) {
   }
 
   return (
-    <div className="glass-card overflow-hidden" style={{ height: 500 }}>
+    <div className="glass-card overflow-hidden" style={{ height: 500, background: '#000' }}>
       <Suspense
         fallback={
           <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs font-mono">

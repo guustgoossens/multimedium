@@ -425,6 +425,14 @@ a {
   display: none !important;
 }
 
+/* Force Excalidraw background to black */
+.excalidraw,
+.excalidraw .layer-ui__wrapper,
+.excalidraw canvas {
+  background: #000 !important;
+  background-color: #000 !important;
+}
+
 @keyframes breathe {
   0%, 100% { opacity: 0.4; }
   50% { opacity: 1; }

@@ -22,11 +22,11 @@ Call `renderVisual` with skill "diagram" and config as a JSON string containing 
       "y": 100,
       "width": 200,
       "height": 80,
-      "strokeColor": "#1971c2",
-      "backgroundColor": "#a5d8ff",
+      "strokeColor": "#4dabf7",
+      "backgroundColor": "#1a3a5c",
       "fillStyle": "solid",
       "strokeWidth": 2,
-      "roughness": 1,
+      "roughness": 0,
       "opacity": 100,
       "angle": 0,
       "seed": 1,
@@ -46,7 +46,7 @@ Call `renderVisual` with skill "diagram" and config as a JSON string containing 
       "height": 20,
       "text": "Input Layer",
       "fontSize": 16,
-      "fontFamily": 1,
+      "fontFamily": 3,
       "textAlign": "center",
       "verticalAlign": "middle",
       "strokeColor": "#ffffff",
@@ -71,11 +71,11 @@ Call `renderVisual` with skill "diagram" and config as a JSON string containing 
       "width": 0,
       "height": 70,
       "points": [[0, 0], [0, 70]],
-      "strokeColor": "#495057",
+      "strokeColor": "#868e96",
       "backgroundColor": "transparent",
       "fillStyle": "solid",
       "strokeWidth": 2,
-      "roughness": 1,
+      "roughness": 0,
       "opacity": 100,
       "angle": 0,
       "seed": 3,
@@ -101,7 +101,7 @@ Every element MUST have these fields:
 - `backgroundColor`: CSS color or "transparent"
 - `fillStyle`: "solid" | "hachure" | "cross-hatch"
 - `strokeWidth`: number (1-4)
-- `roughness`: 0 (clean) or 1 (hand-drawn)
+- `roughness`: 0 (clean, preferred) or 1 (hand-drawn)
 - `opacity`: 100
 - `angle`: 0
 - `seed`: any integer (used for hand-drawn randomness)
@@ -119,7 +119,7 @@ Every element MUST have these fields:
 **text:**
 - `text`: the string content
 - `fontSize`: number (14-28)
-- `fontFamily`: 1 (hand-drawn) or 2 (normal) or 3 (mono)
+- `fontFamily`: 3 (mono, preferred) or 2 (normal). Never use 1 (hand-drawn).
 - `textAlign`: "left" | "center" | "right"
 - `verticalAlign`: "top" | "middle"
 - `containerId`: id of parent shape (if bound inside a shape)
@@ -129,15 +129,15 @@ Every element MUST have these fields:
 - `startArrowhead`: null
 - `endArrowhead`: "arrow" | null
 
-## Color Palette
+## Color Palette (dark background)
 
-- Blue: `#a5d8ff` bg / `#1971c2` stroke
-- Green: `#b2f2bb` bg / `#2f9e44` stroke
-- Red: `#ffc9c9` bg / `#c92a2a` stroke
-- Yellow: `#fff3bf` bg / `#e67700` stroke
-- Gray: `#dee2e6` bg / `#495057` stroke
+- Blue: `#1a3a5c` bg / `#4dabf7` stroke
+- Green: `#1a3c2a` bg / `#51cf66` stroke
+- Red: `#3c1a1a` bg / `#ff6b6b` stroke
+- Yellow: `#3c3010` bg / `#ffd43b` stroke
+- Gray: `#1a1a2e` bg / `#868e96` stroke
 - White text: `#ffffff`
-- Muted text: `#888888`
+- Muted text: `#adb5bd`
 
 ## Tips
 
@@ -146,3 +146,5 @@ Every element MUST have these fields:
 - Keep diagrams clean — max 15-20 elements total (shapes + text + arrows).
 - Use consistent spacing: 120px vertical gaps, 250px horizontal gaps.
 - Always include a title as a large text element (fontSize 24-28) at the top.
+- Background is pure black (#000000). Choose colors with good contrast against black.
+- Use roughness: 0 and fontFamily: 3 for a clean, modern look.
