@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { SkillRouter } from './SkillRouter'
 
 type Explanation = {
@@ -13,104 +13,183 @@ type Explanation = {
 export function FrameContainer({
   explanations,
   isLoading,
+  onAction,
 }: {
   explanations: Explanation[]
   isLoading: boolean
+  onAction?: (prompt: string) => void
 }) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const endRef = useRef<HTMLDivElement>(null)
+  // Filter out _done markers, but track if generation is complete
+  const isDone = explanations.some((e) => e.skill === '_done')
+  const visuals = explanations.filter((e) => e.skill !== '_done')
 
-  // Auto-scroll to latest frame
-  useEffect(() => {
-    if (explanations.length > 0) {
-      endRef.current?.scrollIntoView({ behavior: 'smooth' })
-    }
-  }, [explanations.length])
-
-  const sorted = [...explanations].sort((a, b) => {
+  const sorted = [...visuals].sort((a, b) => {
     if (a.step != null && b.step != null) return a.step - b.step
     return a.createdAt - b.createdAt
   })
 
+  const hasExplanations = sorted.length > 0
+  const frameCount = (hasExplanations ? sorted.length : 1) + (isLoading && !isDone ? 1 : 0)
+
+  const [activeIndex, setActiveIndex] = useState(0)
+  const prevCountRef = useRef(0)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  // When first frame arrives during generation, go to it (index 0)
+  // When subsequent frames arrive, stay where user is (don't jump)
+  // When loading starts, show loading frame
+  useEffect(() => {
+    const prevCount = prevCountRef.current
+    prevCountRef.current = sorted.length
+
+    if (isLoading && sorted.length === 0 && !isDone) {
+      // Show loading frame
+      setActiveIndex(0)
+    } else if (sorted.length > 0 && prevCount === 0) {
+      // First frame just arrived — go to it
+      setActiveIndex(0)
+    }
+    // Otherwise: don't move — let the user scroll at their own pace
+  }, [sorted.length, isLoading, isDone])
+
+  const goNext = useCallback(() => {
+    setActiveIndex((i) => Math.min(i + 1, frameCount - 1))
+  }, [frameCount])
+
+  const goPrev = useCallback(() => {
+    setActiveIndex((i) => Math.max(i - 1, 0))
+  }, [])
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); goNext() }
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); goPrev() }
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [goNext, goPrev])
+
+  // Wheel navigation — only switch frames at scroll boundaries
+  useEffect(() => {
+    let accumulated = 0
+    const threshold = 60
+
+    const handleWheel = (e: WheelEvent) => {
+      // Find the active frame element
+      const container = containerRef.current
+      if (!container) return
+      const activeFrame = container.querySelector('.frame.active') as HTMLElement | null
+      if (!activeFrame) { e.preventDefault(); return }
+
+      const { scrollTop, scrollHeight, clientHeight } = activeFrame
+      const atTop = scrollTop <= 0
+      const atBottom = scrollTop + clientHeight >= scrollHeight - 1
+      const isScrollable = scrollHeight > clientHeight + 1
+
+      // If frame has internal scroll and we're not at a boundary, let it scroll normally
+      if (isScrollable) {
+        if (e.deltaY > 0 && !atBottom) return
+        if (e.deltaY < 0 && !atTop) return
+      }
+
+      // At boundary or non-scrollable — switch frames
+      e.preventDefault()
+      accumulated += e.deltaY
+      while (accumulated >= threshold) {
+        accumulated -= threshold
+        goNext()
+      }
+      while (accumulated <= -threshold) {
+        accumulated += threshold
+        goPrev()
+      }
+    }
+    window.addEventListener('wheel', handleWheel, { passive: false })
+    return () => window.removeEventListener('wheel', handleWheel)
+  }, [goNext, goPrev])
+
+  // Build frames list
+  const frames: { key: string; content: React.ReactNode }[] = []
+
+  if (!hasExplanations && !isLoading) {
+    frames.push({
+      key: 'welcome',
+      content: (
+        <div className="frame-content text-center space-y-4">
+          <h1 className="text-3xl font-mono font-bold text-white tracking-tight">
+            multimedium
+          </h1>
+          <p className="text-gray-500 text-sm font-mono max-w-sm mx-auto">
+            ask anything. see it visually.
+          </p>
+        </div>
+      ),
+    })
+  }
+
+  for (const explanation of sorted) {
+    frames.push({
+      key: explanation._id,
+      content: (
+        <div className="frame-content space-y-6">
+          <SkillRouter explanation={explanation} onAction={onAction} />
+          {explanation.narration && (
+            <div className="glass-card px-6 py-4 mt-4">
+              <p className="text-gray-300 text-sm leading-relaxed italic">
+                {explanation.narration}
+              </p>
+            </div>
+          )}
+        </div>
+      ),
+    })
+  }
+
+  if (isLoading) {
+    frames.push({
+      key: 'loading',
+      content: (
+        <div className="frame-content text-center space-y-4">
+          <div className="loading-breathe">
+            <div className="w-12 h-12 mx-auto rounded border border-white/10 flex items-center justify-center">
+              <div className="w-4 h-4 rounded-sm bg-white/10" />
+            </div>
+          </div>
+          <p className="text-gray-600 text-xs font-mono">generating...</p>
+        </div>
+      ),
+    })
+  }
+
   return (
     <div ref={containerRef} className="frame-container">
-      {/* Welcome frame */}
-      {sorted.length === 0 && !isLoading && (
-        <div className="frame">
-          <div className="frame-content text-center space-y-6">
-            <div className="text-6xl mb-2">&#9672;</div>
-            <h1 className="text-4xl font-bold text-white tracking-tight" style={{ fontFamily: "'Fraunces', Georgia, serif" }}>
-              Multimedium
-            </h1>
-            <p className="text-gray-400 text-lg max-w-md mx-auto">
-              Ask a question and watch it come to life. No text walls — just visuals and voice.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Loading frame */}
-      {isLoading && sorted.length === 0 && (
-        <div className="frame">
-          <div className="frame-content text-center space-y-6">
-            <div className="loading-breathe">
-              <div className="w-16 h-16 mx-auto rounded-full border-2 border-purple-500/30 flex items-center justify-center">
-                <div className="w-8 h-8 rounded-full bg-purple-500/20" />
-              </div>
-            </div>
-            <p className="text-gray-500 text-sm">Thinking visually...</p>
-          </div>
-        </div>
-      )}
-
-      {/* Explanation frames */}
-      {sorted.map((explanation, i) => (
-        <div key={explanation._id} className="frame" style={{ animationDelay: `${i * 100}ms` }}>
-          <div className="frame-content space-y-6">
-            {/* Step indicator */}
-            {sorted.length > 1 && (
-              <div className="flex items-center gap-3">
-                <div className="flex gap-1.5">
-                  {sorted.map((_, j) => (
-                    <div
-                      key={j}
-                      className={`h-1.5 rounded-full transition-all ${
-                        j === i ? 'w-6 bg-purple-400' : 'w-1.5 bg-white/15'
-                      }`}
-                    />
-                  ))}
-                </div>
-                <span className="text-gray-500 text-xs">
-                  {i + 1} / {sorted.length}
-                </span>
-              </div>
-            )}
-
-            {/* Visual content */}
-            <SkillRouter explanation={explanation} />
-
-            {/* Narration subtitle */}
-            {explanation.narration && (
-              <div className="glass-card px-6 py-4 mt-4">
-                <p className="text-gray-300 text-sm leading-relaxed italic">
-                  {explanation.narration}
-                </p>
-              </div>
-            )}
-          </div>
+      {frames.map((frame, i) => (
+        <div
+          key={frame.key}
+          className={`frame ${i === activeIndex ? 'active' : ''}`}
+        >
+          {frame.content}
         </div>
       ))}
 
-      {/* Loading indicator when adding more frames */}
-      {isLoading && sorted.length > 0 && (
-        <div className="frame">
-          <div className="frame-content text-center">
-            <div className="loading-breathe text-gray-500 text-sm">Generating next visual...</div>
-          </div>
+      {/* Frame indicator dots */}
+      {frames.length > 1 && (
+        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2">
+          {frames.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setActiveIndex(i)}
+              className={`rounded-full transition-all ${
+                i === activeIndex
+                  ? 'w-5 h-1.5 bg-white'
+                  : 'w-1.5 h-1.5 bg-white/20 hover:bg-white/40'
+              }`}
+            />
+          ))}
         </div>
       )}
-
-      <div ref={endRef} />
     </div>
   )
 }

@@ -11,14 +11,11 @@ type Explanation = {
 
 function PlaceholderRenderer({ skill, narration }: { skill: string; narration?: string }) {
   return (
-    <div className="glass-card p-8 text-center space-y-4">
-      <div className="text-4xl">
-        {skill === 'manim' ? '📐' : skill === 'diagram' ? '🔲' : skill === 'particles' ? '✨' : '🎨'}
+    <div className="glass-card p-8 text-center space-y-3">
+      <div className="text-gray-500 text-xs font-mono uppercase tracking-widest">
+        {skill}
       </div>
-      <div className="text-gray-400 text-sm font-medium uppercase tracking-wider">
-        {skill} renderer
-      </div>
-      <div className="text-gray-500 text-xs">Coming soon — teammate building this</div>
+      <div className="text-gray-600 text-xs font-mono">renderer pending</div>
       {narration && (
         <p className="text-gray-300 text-sm italic mt-4 max-w-md mx-auto">
           "{narration}"
@@ -28,7 +25,7 @@ function PlaceholderRenderer({ skill, narration }: { skill: string; narration?: 
   )
 }
 
-export function SkillRouter({ explanation }: { explanation: Explanation }) {
+export function SkillRouter({ explanation, onAction }: { explanation: Explanation; onAction?: (prompt: string) => void }) {
   let config: any
   try {
     config = JSON.parse(explanation.config)
@@ -42,7 +39,7 @@ export function SkillRouter({ explanation }: { explanation: Explanation }) {
 
   switch (explanation.skill) {
     case 'ui':
-      return <UIRenderer config={config} />
+      return <UIRenderer config={config} onAction={onAction} />
     case 'particles':
       return <ParticlesRenderer config={config} />
     case 'manim':

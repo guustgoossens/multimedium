@@ -21,21 +21,21 @@ export function PromptInput({
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 p-4 pb-6">
       <div className="mx-auto max-w-2xl">
-        <form onSubmit={handleSubmit} className="glass-input rounded-2xl flex items-center px-5 py-3.5">
+        <form onSubmit={handleSubmit} className="glass-input rounded-lg flex items-center px-4 py-3">
           <input
             ref={inputRef}
             type="text"
             value={value}
             onChange={(e) => setValue(e.target.value)}
-            placeholder={isLoading ? 'Generating visual...' : 'Ask me anything...'}
+            placeholder={isLoading ? 'Generating...' : 'Ask anything...'}
             disabled={isLoading}
-            className="flex-1 bg-transparent text-white placeholder-gray-500 text-sm outline-none disabled:opacity-50"
+            className="flex-1 bg-transparent text-white placeholder-gray-600 text-sm font-mono outline-none disabled:opacity-50"
             autoFocus
           />
           <button
             type="submit"
             disabled={!value.trim() || isLoading}
-            className="ml-3 flex h-8 w-8 items-center justify-center rounded-xl bg-purple-500/80 text-white transition hover:bg-purple-500 disabled:opacity-30 disabled:hover:bg-purple-500/80"
+            className="ml-3 flex h-7 w-7 items-center justify-center rounded bg-white text-black transition hover:bg-gray-200 disabled:opacity-20"
           >
             {isLoading ? (
               <span className="loading-breathe text-xs">...</span>

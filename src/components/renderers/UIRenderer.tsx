@@ -1,4 +1,9 @@
-import { useState, type ReactNode } from 'react'
+import { createContext, useContext, useState, type ReactNode } from 'react'
+
+// ─── Action Context (for ActionCard clicks) ───
+
+type ActionHandler = (prompt: string) => void
+const ActionContext = createContext<ActionHandler | null>(null)
 
 // ─── Types ───
 
@@ -107,7 +112,7 @@ const BADGE_COLORS: Record<string, string> = {
   red: 'bg-red-500/20 text-red-300 border-red-500/30',
   yellow: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
   gray: 'bg-gray-500/20 text-gray-300 border-gray-500/30',
-  purple: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
+  purple: 'bg-white/10 text-gray-200 border-white/20',
 }
 
 function Badge({ children, variant = 'blue' }: { children: ReactNode; variant?: string }) {
@@ -187,7 +192,7 @@ function Progress({ value = 0, label }: { value: number; label?: string; childre
     <div className="space-y-1.5">
       {label && <div className="flex justify-between text-sm"><span className="text-gray-300">{label}</span><span className="text-gray-400">{value}%</span></div>}
       <div className="h-2.5 rounded-full bg-white/8 overflow-hidden">
-        <div className="h-full rounded-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500" style={{ width: `${value}%` }} />
+        <div className="h-full rounded-full bg-white transition-all duration-500" style={{ width: `${value}%` }} />
       </div>
     </div>
   )
@@ -207,7 +212,7 @@ function Tabs({ tabs }: { tabs: { label: string; content: JsonNode | string }[];
             onClick={() => setActive(i)}
             className={`px-4 py-2.5 text-sm font-medium transition-colors rounded-t-lg ${
               i === active
-                ? 'text-white bg-white/8 border-b-2 border-purple-400'
+                ? 'text-white bg-white/8 border-b border-white'
                 : 'text-gray-400 hover:text-gray-200'
             }`}
           >
@@ -265,6 +270,37 @@ function Alert({ variant = 'info', title, message, children }: {
   )
 }
 
+// ─── Action Components ───
+
+function ActionCard({ children, prompt, icon, label, title, text, variant = 'default' }: {
+  children?: ReactNode; prompt: string; icon?: string; label?: string; title?: string; text?: string; variant?: string
+}) {
+  const onAction = useContext(ActionContext)
+  // Agent might put the label as children, label, title, or text prop — handle all
+  const displayText = children || label || title || text || prompt
+  const variants: Record<string, string> = {
+    default: 'border-white/8 hover:border-white/25 hover:bg-white/5',
+    primary: 'border-white/15 bg-white/5 hover:bg-white/8',
+    subtle: 'border-white/5 hover:border-white/12 hover:bg-white/3',
+  }
+  return (
+    <button
+      onClick={() => onAction?.(prompt)}
+      className={`glass-card w-full text-left px-5 py-4 transition-all cursor-pointer group ${variants[variant] || variants.default}`}
+    >
+      <div className="flex items-center gap-3">
+        {icon && <span className="text-xl">{icon}</span>}
+        <span className="text-sm text-gray-200 group-hover:text-white transition-colors">
+          {displayText}
+        </span>
+        <svg className="ml-auto shrink-0 w-4 h-4 text-gray-600 group-hover:text-white transition-colors" viewBox="0 0 16 16" fill="none">
+          <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </div>
+    </button>
+  )
+}
+
 // ─── Component Registry ───
 
 const COMPONENTS: Record<string, React.FC<any>> = {
@@ -282,10 +318,15 @@ const COMPONENTS: Record<string, React.FC<any>> = {
   Tabs,
   Accordion,
   Alert,
+  ActionCard,
 }
 
 // ─── Public API ───
 
-export function UIRenderer({ config }: { config: JsonNode }) {
-  return <div className="space-y-4">{renderNode(config, 0)}</div>
+export function UIRenderer({ config, onAction }: { config: JsonNode; onAction?: ActionHandler }) {
+  return (
+    <ActionContext.Provider value={onAction ?? null}>
+      <div className="space-y-4">{renderNode(config, 0)}</div>
+    </ActionContext.Provider>
+  )
 }
