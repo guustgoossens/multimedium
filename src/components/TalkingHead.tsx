@@ -4,8 +4,7 @@ export interface TalkingHeadHandle {
   speak: (text: string) => void
 }
 
-const AVATAR_URL =
-  'https://cdn.jsdelivr.net/gh/met4citizen/TalkingHead@main/avatars/mpfb.glb'
+const AVATAR_URL = '/avatars/avatarsdk.glb'
 
 const TalkingHeadComponent = forwardRef<TalkingHeadHandle>((_, ref) => {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -49,16 +48,43 @@ const TalkingHeadComponent = forwardRef<TalkingHeadHandle>((_, ref) => {
 
         if (cancelled) return
 
-        // Apply wireframe material — white grid on black bg like the reference image
+        // Two-pass render: solid black occluder hides back geometry,
+        // wireframe clone on top shows only front-facing lines.
         const THREE = await import('three')
-        head.armature.traverse((child: any) => {
-          if (child.isMesh) {
-            child.material = new THREE.MeshBasicMaterial({
-              color: 0xffffff,
-              wireframe: true,
-            })
-          }
+
+        const occluderMat = new THREE.MeshBasicMaterial({
+          color: 0x000000,
+          side: THREE.FrontSide,
+          depthWrite: true,
         })
+
+        const wireframeMat = new THREE.MeshPhongMaterial({
+          color: 0xffffff,
+          wireframe: true,
+          shininess: 0,
+          depthTest: true,
+        })
+
+        const clones: Array<{ clone: any; parent: any }> = []
+
+        head.armature.traverse((child: any) => {
+          if (!child.isMesh) return
+
+          // Original mesh becomes solid black mask
+          child.material = occluderMat
+          child.renderOrder = 0
+
+          // Clone for wireframe overlay sharing the same skeleton
+          const wireClone = child.clone()
+          wireClone.material = wireframeMat
+          wireClone.renderOrder = 1
+          if (child.isSkinnedMesh) {
+            wireClone.bind(child.skeleton, child.bindMatrix.clone())
+          }
+          clones.push({ clone: wireClone, parent: child.parent })
+        })
+
+        clones.forEach(({ clone, parent }) => parent.add(clone))
         head.renderer.setClearColor(0x000000, 1)
 
         // Hide loading overlay

@@ -51,9 +51,14 @@ function ChatPage() {
   }, [explanations])
 
   async function handleSend() {
-    if (!input.trim() || !threadId || sending) return
+    if (!input.trim() || sending) return
     const prompt = input.trim()
     setInput('')
+
+    // Immediately animate the avatar with the user's text
+    headRef.current?.speak(prompt)
+
+    if (!threadId) return
     setSending(true)
     try {
       await sendMessage({ threadId, prompt })
