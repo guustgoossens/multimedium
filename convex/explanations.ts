@@ -18,6 +18,21 @@ export const create = internalMutation({
   },
 });
 
+export const markDone = internalMutation({
+  args: {
+    threadId: v.string(),
+    totalFrames: v.number(),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.insert("explanations", {
+      threadId: args.threadId,
+      skill: "_done",
+      config: JSON.stringify({ totalFrames: args.totalFrames }),
+      createdAt: Date.now(),
+    });
+  },
+});
+
 export const getByThread = query({
   args: { threadId: v.string() },
   handler: async (ctx, args) => {

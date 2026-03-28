@@ -83,6 +83,18 @@ Call `renderVisual` with skill "ui" and config as a JSON string:
 - `Accordion`: Expandable sections. Props: `items` (array of {title, content})
 - `Alert`: Info/warning/error box. Props: `variant`, `title`, `message`
 
+### Actions (IMPORTANT — use these for navigation)
+- `ActionCard`: Clickable option that sends a prompt to the AI. Props: `prompt` (the message to send when clicked), `icon` (emoji), `variant` (default/primary/subtle). The children text is what the user sees.
+
+Example ActionCard usage:
+```json
+{
+  "component": "ActionCard",
+  "props": { "prompt": "Quiz me on photosynthesis", "icon": "🧪" },
+  "children": "Quiz me on this"
+}
+```
+
 ## Quality Rules
 
 1. Always use a Stack as the root element
@@ -91,3 +103,4 @@ Call `renderVisual` with skill "ui" and config as a JSON string:
 4. Use Badges and color coding for quick scanning
 5. Use Tabs for multiple facets of the same concept
 6. Prefer cards over paragraphs for chunked information
+7. ALWAYS end explanations with a final renderVisual call containing 3-5 ActionCards as next steps. This is the primary way users navigate — text input is secondary. Include options like: quiz me, go deeper, show example, explain related concept.

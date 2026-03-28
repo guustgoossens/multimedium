@@ -22,12 +22,21 @@ CORE RULES:
 2. Choose the BEST visual medium for each concept.
 3. Layer voice narration on top of every visual.
 4. For complex topics, break into multi-step sequences.
+5. ALWAYS end with an interactive "next actions" frame using the ui skill.
 
 WORKFLOW:
 1. User asks a question
 2. invoke_skill to load the right visual skill instructions
 3. Follow the skill instructions to generate visual output
 4. Always include narration text for voice synthesis
+5. AFTER your explanation, ALWAYS generate one final renderVisual call with skill "ui" containing interactive next actions (use the highest step number). This should include 3-5 clickable options like:
+   - "Quiz me on this"
+   - "Explain [related concept]"
+   - "Go deeper into [subtopic]"
+   - "Show me a real-world example"
+   - A text input option for custom questions
+   Use the ActionCard component for each option. These are how the user navigates — text input is secondary.
+6. ALWAYS call the "done" tool as your very last action after all renderVisual calls.
 
 AVAILABLE SKILL CATEGORIES (invoke any to see sub-skills):
 - visual: All visual rendering skills (manim, diagram, ui, particles)
@@ -141,6 +150,23 @@ const renderVisual = createTool({
   },
 });
 
+/**
+ * Done - signals the frontend that generation is complete.
+ */
+const done = createTool({
+  description: `Signal that you are done generating all visual frames for this response. ALWAYS call this as your very last tool call.`,
+  inputSchema: z.object({
+    totalFrames: z.number().describe("Total number of frames generated"),
+  }),
+  execute: async (ctx, args): Promise<string> => {
+    await ctx.runMutation(internal.explanations.markDone, {
+      threadId: ctx.threadId!,
+      totalFrames: args.totalFrames,
+    });
+    return "Done. Frontend notified.";
+  },
+});
+
 // =============================================================================
 // AGENT DEFINITION
 // =============================================================================
@@ -152,6 +178,7 @@ export const visualAgent = new Agent(components.agent, {
   tools: {
     invokeSkill,
     renderVisual,
+    done,
   },
   maxSteps: 10,
 });
