@@ -210,6 +210,7 @@ export const runSubAgent = internalAction({
       `Generate step ${args.step} using the visual/${args.skill} skill.`,
       `First, invoke skill "visual/${args.skill}" to load the output format.`,
       `Then call renderVisual with step=${args.step}.`,
+      `You MUST call renderVisual — do NOT just describe the visual in text.`,
       ``,
       `TASK: ${args.segmentPrompt}`,
       args.narrationHint ? `NARRATION GUIDANCE: ${args.narrationHint}` : "",
@@ -217,6 +218,45 @@ export const runSubAgent = internalAction({
       .filter(Boolean)
       .join("\n");
 
-    await visualAgent.generateText(ctx, { threadId: args.threadId }, { prompt });
+    // Create a fresh thread for each sub-agent to avoid context pollution.
+    // The sub-agent's renderVisual tool will write to the ORIGINAL threadId
+    // via the overridden tool below.
+    const { threadId: subThreadId } = await subAgentForThread(args.threadId, args.step).createThread(ctx, {});
+    await subAgentForThread(args.threadId, args.step).generateText(
+      ctx,
+      { threadId: subThreadId },
+      { prompt }
+    );
   },
 });
+
+/**
+ * Creates a sub-agent instance that writes explanations to the parent threadId,
+ * regardless of which thread it's actually running in.
+ */
+function subAgentForThread(parentThreadId: string, step: number) {
+  const boundRenderVisual = createTool({
+    description: renderVisual.description,
+    inputSchema: renderVisual.inputSchema,
+    execute: async (ctx, args): Promise<string> => {
+      // Write to the PARENT thread, not the sub-agent's ephemeral thread
+      await ctx.runMutation(internal.explanations.create, {
+        threadId: parentThreadId,
+        messageId: ctx.messageId,
+        skill: args.skill,
+        config: args.config,
+        narration: args.narration,
+        step: args.step ?? step,
+      });
+      return `Saved: ${args.skill} step ${args.step ?? step}`;
+    },
+  });
+
+  return new Agent(components.agent, {
+    name: `sub-agent-step-${step}`,
+    languageModel: anthropic("claude-sonnet-4-6"),
+    instructions: SUB_AGENT_INSTRUCTIONS,
+    tools: { invokeSkill, renderVisual: boundRenderVisual },
+    maxSteps: 5,
+  });
+}
