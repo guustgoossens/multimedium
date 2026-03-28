@@ -34,22 +34,28 @@ export function FrameContainer({
   const [activeIndex, setActiveIndex] = useState(0)
   const prevCountRef = useRef(0)
   const containerRef = useRef<HTMLDivElement>(null)
+  const wasLoadingRef = useRef(false)
+  const generationStartCountRef = useRef(0)
 
-  // When first frame arrives during generation, go to it (index 0)
-  // When subsequent frames arrive, stay where user is (don't jump)
-  // When loading starts, show loading frame
   useEffect(() => {
     const prevCount = prevCountRef.current
     prevCountRef.current = sorted.length
 
+    // Loading just started — remember where we were
+    if (isLoading && !wasLoadingRef.current) {
+      generationStartCountRef.current = prevCount
+    }
+    wasLoadingRef.current = isLoading
+
+    // New frame arrived during this generation — jump to it
+    if (sorted.length > prevCount && sorted.length > generationStartCountRef.current) {
+      setActiveIndex(sorted.length - 1)
+    }
+
+    // Loading with no frames yet — show loading indicator
     if (isLoading && sorted.length === 0 && !isDone) {
-      // Show loading frame
-      setActiveIndex(0)
-    } else if (sorted.length > 0 && prevCount === 0) {
-      // First frame just arrived — go to it
       setActiveIndex(0)
     }
-    // Otherwise: don't move — let the user scroll at their own pace
   }, [sorted.length, isLoading, isDone])
 
   const goNext = useCallback(() => {
