@@ -107,9 +107,12 @@ function App() {
     }
   }, [createThread, sendMessage])
 
+  // Show full-screen avatar on landing, side avatar once frames are generating
+  const hasFrames = (explanations?.filter((e) => e.skill !== '_done').length ?? 0) > 0 || isLoading
+
   return (
     <div className="canvas">
-      <div className="talking-head-side">
+      <div className={hasFrames ? 'talking-head-side' : 'talking-head-bg'}>
         <TalkingHead ref={headRef} />
       </div>
 

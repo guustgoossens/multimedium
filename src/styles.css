@@ -348,14 +348,21 @@ a {
   inset: 0;
 }
 
+.talking-head-bg,
+.talking-head-side {
+  position: fixed;
+  background: #000;
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 .talking-head-bg {
-  position: absolute;
   inset: 0;
   z-index: 0;
+  border-radius: 0;
+  border: none;
 }
 
 .talking-head-side {
-  position: fixed;
   bottom: 5rem;
   right: 1.5rem;
   width: 240px;
@@ -364,7 +371,6 @@ a {
   border-radius: 50%;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  background: #000;
 }
 
 .frame-container {
