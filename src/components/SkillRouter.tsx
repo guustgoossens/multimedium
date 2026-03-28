@@ -1,5 +1,6 @@
 import { UIRenderer } from './renderers/UIRenderer'
 import { ParticlesRenderer } from './renderers/particles'
+import { ManimRenderer } from './renderers/ManimRenderer'
 
 type Explanation = {
   _id: string
@@ -43,6 +44,7 @@ export function SkillRouter({ explanation, onAction }: { explanation: Explanatio
     case 'particles':
       return <ParticlesRenderer config={config} />
     case 'manim':
+      return <ManimRenderer config={config} />
     case 'diagram':
       return <PlaceholderRenderer skill={explanation.skill} narration={explanation.narration} />
     default:
