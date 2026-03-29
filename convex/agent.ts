@@ -168,17 +168,12 @@ const renderVisual = createTool({
       step: args.step,
     });
 
-    // Generate ElevenLabs audio for narration (non-blocking from user's perspective
-    // since each sub-agent already runs async from the director)
+    // Schedule TTS as background job — don't block the sub-agent
     if (args.narration) {
-      try {
-        await ctx.runAction(internal.tts.generateAudio, {
-          narration: args.narration,
-          explanationId,
-        });
-      } catch (error) {
-        console.error("[TTS] Audio generation failed, frame will use text fallback:", error);
-      }
+      await ctx.scheduler.runAfter(0, internal.tts.generateAudio, {
+        narration: args.narration,
+        explanationId,
+      });
     }
 
     return `Saved: ${args.skill} step ${args.step ?? "?"}`;
@@ -249,16 +244,12 @@ function subAgentForThread(parentThreadId: string, step: number) {
         step: args.step ?? step,
       });
 
-      // Generate ElevenLabs audio for narration
+      // Schedule TTS as background job — don't block the sub-agent
       if (args.narration) {
-        try {
-          await ctx.runAction(internal.tts.generateAudio, {
-            narration: args.narration,
-            explanationId,
-          });
-        } catch (error) {
-          console.error("[TTS] Audio generation failed:", error);
-        }
+        await ctx.scheduler.runAfter(0, internal.tts.generateAudio, {
+          narration: args.narration,
+          explanationId,
+        });
       }
 
       return `Saved: ${args.skill} step ${args.step ?? step}`;

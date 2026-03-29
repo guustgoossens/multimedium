@@ -28,12 +28,17 @@ const TalkingHeadComponent = forwardRef<TalkingHeadHandle>((_, ref) => {
     if (audioCtxRef.current.state === 'suspended') {
       audioCtxRef.current.resume()
     }
+    // Also resume the library's internal AudioContext
+    if (headRef.current?.audioCtx?.state === 'suspended') {
+      headRef.current.audioCtx.resume()
+    }
     return audioCtxRef.current
   }
 
   useImperativeHandle(ref, () => ({
-    speak(text: string) {
-      headRef.current?.speakText(text, { avatarMute: true })
+    speak(_text: string) {
+      // No-op: lipsync module can't load in Vite/Vercel, so speakText crashes.
+      // Real speech uses speakWithAudio with pre-computed timings instead.
     },
     stopSpeaking() {
       headRef.current?.stopSpeaking()
@@ -56,6 +61,7 @@ const TalkingHeadComponent = forwardRef<TalkingHeadHandle>((_, ref) => {
             words: timings.words,
             wtimes: timings.wtimes,
             wdurations: timings.wdurations,
+            visemes: [], // skip lipsync module (not loaded)
           },
           {},
           undefined,
@@ -67,8 +73,7 @@ const TalkingHeadComponent = forwardRef<TalkingHeadHandle>((_, ref) => {
           headRef.current?.setMood('neutral')
         }, durationMs + 500)
       } catch (err) {
-        console.error('[TalkingHead] speakWithAudio failed, falling back to text:', err)
-        headRef.current?.speakText('', { avatarMute: true })
+        console.error('[TalkingHead] speakWithAudio failed:', err)
       }
     },
   }))
@@ -86,7 +91,7 @@ const TalkingHeadComponent = forwardRef<TalkingHeadHandle>((_, ref) => {
         const head = new TalkingHead(container, {
           cameraView: 'head',
           cameraRotateEnable: false,
-          lipsyncModules: ['en'],
+          lipsyncModules: [],
           lipsyncLang: 'en',
           avatarMood: 'neutral',
           avatarIdleEyeContact: 0.7,
@@ -171,6 +176,19 @@ const TalkingHeadComponent = forwardRef<TalkingHeadHandle>((_, ref) => {
         // Hide loading overlay
         const overlay = container.querySelector<HTMLElement>('[data-loading]')
         if (overlay) overlay.style.display = 'none'
+
+        // Resume the library's AudioContext on first user gesture (required on production HTTPS)
+        const resumeAudio = () => {
+          if (head.audioCtx?.state === 'suspended') {
+            head.audioCtx.resume()
+          }
+          document.removeEventListener('click', resumeAudio)
+          document.removeEventListener('touchstart', resumeAudio)
+          document.removeEventListener('keydown', resumeAudio)
+        }
+        document.addEventListener('click', resumeAudio)
+        document.addEventListener('touchstart', resumeAudio)
+        document.addEventListener('keydown', resumeAudio)
 
         headRef.current = head
       } catch (err) {
