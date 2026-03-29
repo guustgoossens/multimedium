@@ -2,6 +2,8 @@
 
 **Ask anything. See it visually.**
 
+<img width="1209" height="968" alt="Screenshot 2026-03-29 at 14 00 09" src="https://github.com/user-attachments/assets/edf55991-5d86-41df-960c-abc6e99010d5" />
+
 An AI tutor that explains concepts through real-time visuals — math animations, particle simulations, system diagrams, and interactive components — narrated by a talking avatar. Built at the [Anthropic NullHack Hackathon](https://nullhack.anthropic.com), March 2026.
 
 Built by [Guust Goossens](https://github.com/guustgoossens), [Elias Teikari](https://github.com/), and Ludwig Illies.
