@@ -1,224 +1,174 @@
-Welcome to your new TanStack Start app! 
+# multimedium
 
-# Getting Started
+**Ask anything. See it visually.**
 
-To run this application:
+An AI tutor that explains concepts through real-time visuals — math animations, particle simulations, system diagrams, and interactive components — narrated by a talking avatar. Built at the [Anthropic NullHack Hackathon](https://nullhack.anthropic.com), March 2026.
+
+Built by [Guust Goossens](https://github.com/guustgoossens), [Elias Teikari](https://github.com/), and Ludwig Illies.
+
+---
+
+## The Problem
+
+School is broken. It's text-based, one-directional, and treats every student the same — even though decades of research show that visual, personalized learning is dramatically more effective.
+
+```
+Traditional Education          AI Tutoring
+
+   Teacher                      AI Tutor
+   /  |  \                        |
+  /   |   \                       |
+ v    v    v                      v
+ 30 students              ONE student
+ (same pace)              (adapted pace)
+ (no feedback loop)       (continuous feedback)
+```
+
+The greatest minds in history — Marcus Aurelius, Alexander the Great — had private tutors. Not textbooks, not lectures. A person who adapted to *them*, challenged *their* thinking, and engaged *them* in dialogue. That model produces better thinkers. But it doesn't scale.
+
+Until now. AI makes one-to-one education the first scalable, cost-efficient model for high-quality knowledge transfer.
+
+But current LLMs still communicate in walls of text. That's a problem because **humans don't think in text**. We think in structures, systems, spatial relationships, and patterns. We have more senses than just reading. Text is linear and flat. Understanding is not.
+
+Multimedium fixes this. It's an AI that communicates the way humans actually think — through visuals, animation, and voice — keeping you in flow instead of drowning you in paragraphs.
+
+---
+
+## How It Works
+
+You ask a question. The AI plans a visual narrative, then renders it frame by frame.
+
+```
+ "Explain derivatives"
+         |
+         v
+  +--------------+
+  | Director AI  |  Plans 2-5 narrative segments
+  +--------------+
+    |    |    |
+    v    v    v
+  +--+ +--+ +--+
+  |S1| |S2| |S3|   Sub-agents render each frame
+  +--+ +--+ +--+   independently & in parallel
+    |    |    |
+    v    v    v
+  Manim  Manim  UI     Each picks the best medium:
+  anim   anim   cards   math, diagram, particles, or UI
+```
+
+1. **Director Agent** receives your question, plans a narrative arc (intro, build-up, key insight, summary, next actions)
+2. **Visual Sub-Agents** each load a skill spec, generate structured JSON config, and save a frame
+3. **Renderers** display each frame in real time as it arrives
+4. **Avatar** narrates with ElevenLabs TTS, synced word-by-word
+5. **ActionCards** let you branch into follow-up questions
+
+The director never generates visuals itself — it orchestrates. The sub-agents never plan — they execute. Clean separation prevents context pollution and keeps each agent focused.
+
+---
+
+## Visual Skills
+
+| Skill | Best For | Powered By |
+|-------|----------|------------|
+| **Manim** | Equations, graphs, geometry, step-by-step proofs | manim-web (3Blue1Brown style) |
+| **Diagram** | Concept maps, flowcharts, architecture, relationships | Excalidraw |
+| **Particles** | Physics forces, waves, fields, molecular behavior | React Three Fiber |
+| **UI** | Summaries, comparisons, quizzes, next-step actions | Custom component renderer |
+
+The AI chooses the right medium for each segment. A derivative explanation might use Manim for the math, then a UI card for the summary and follow-up prompts.
+
+---
+
+## Architecture
+
+```
+Browser (React + TanStack Start)
+  |
+  |-- TalkingHead         3D wireframe avatar (Three.js)
+  |-- FrameContainer      Carousel of visual frames
+  |-- SkillRouter         Routes to correct renderer
+  |-- PromptInput         Text + speech input
+  |
+  v
+Convex (Backend)
+  |
+  |-- Director Agent      Plans narrative, dispatches sub-agents
+  |-- Visual Sub-Agents   Load skill specs, generate config JSON
+  |-- TTS (ElevenLabs)    Async audio generation with word timings
+  |-- Explanations DB     Stores frames, audio, timings per thread
+```
+
+### Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Framework | TanStack Start + React 19 |
+| Backend | Convex + @convex-dev/agent |
+| AI | Claude Sonnet 4.6 (via @ai-sdk/anthropic) |
+| Voice | ElevenLabs TTS (word-level timestamps) |
+| 3D Avatar | @met4citizen/talkinghead + Three.js |
+| Math Animations | manim-web |
+| Diagrams | Excalidraw |
+| Particle Sims | React Three Fiber |
+| Auth | WorkOS AuthKit |
+| Styling | Tailwind CSS 4 |
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- [Bun](https://bun.sh)
+- [Convex](https://convex.dev) account
+- Anthropic API key
+- ElevenLabs API key + voice ID (for narration)
+
+### Setup
 
 ```bash
+git clone https://github.com/guustgoossens/multimedium.git
+cd multimedium
 bun install
-bun --bun run dev
 ```
 
-# Building For Production
+Set up environment variables in `.env.local`:
 
-To build this application for production:
+```env
+VITE_CONVEX_URL=your_convex_url
+CONVEX_DEPLOYMENT=your_deployment
+ANTHROPIC_API_KEY=your_key
+ELEVENLABS_API_KEY=your_key
+ELEVENLABS_VOICE_ID=your_voice_id
+VITE_WORKOS_CLIENT_ID=your_client_id
+```
+
+### Run
 
 ```bash
-bun --bun run build
+# Terminal 1: Convex backend
+bunx convex dev
+
+# Terminal 2: Frontend
+bun run dev
 ```
 
-## Testing
-
-This project uses [Vitest](https://vitest.dev/) for testing. You can run the tests with:
+Sync visual skills to the database:
 
 ```bash
-bun --bun run test
+bun run skills:sync
 ```
 
-## Styling
+---
 
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
+## Why This Matters
 
-### Removing Tailwind CSS
+Education has a scaling problem. The best way to learn is one-to-one with an expert who adapts to you. But that costs $100+/hour and doesn't scale beyond the privileged few.
 
-If you prefer not to use Tailwind CSS:
+AI changes the economics. But most AI tutors just generate more text — the same medium that makes traditional education ineffective. Multimedium takes the insight that humans learn visually and makes it the *default* communication mode.
 
-1. Remove the demo pages in `src/routes/demo/`
-2. Replace the Tailwind import in `src/styles.css` with your own styles
-3. Remove `tailwindcss()` from the plugins array in `vite.config.ts`
-4. Uninstall the packages: `bun install @tailwindcss/vite tailwindcss -D`
+The goal: democratize the kind of education that used to be reserved for emperors and their children.
 
-## Linting & Formatting
+---
 
-
-This project uses [eslint](https://eslint.org/) and [prettier](https://prettier.io/) for linting and formatting. Eslint is configured using [tanstack/eslint-config](https://tanstack.com/config/latest/docs/eslint). The following scripts are available:
-
-```bash
-bun --bun run lint
-bun --bun run format
-bun --bun run check
-```
-
-
-## Setting up WorkOS
-
-- Set the `VITE_WORKOS_CLIENT_ID` in your `.env.local`.
-
-
-## Setting up Convex
-
-- Set the `VITE_CONVEX_URL` and `CONVEX_DEPLOYMENT` environment variables in your `.env.local`. (Or run `bunx --bun convex init` to set them automatically.)
-- Run `bunx --bun convex dev` to start the Convex server.
-
-
-## Shadcn
-
-Add components using the latest version of [Shadcn](https://ui.shadcn.com/).
-
-```bash
-pnpm dlx shadcn@latest add button
-```
-
-
-
-## Routing
-
-This project uses [TanStack Router](https://tanstack.com/router) with file-based routing. Routes are managed as files in `src/routes`.
-
-### Adding A Route
-
-To add a new route to your application just add a new file in the `./src/routes` directory.
-
-TanStack will automatically generate the content of the route file for you.
-
-Now that you have two routes you can use a `Link` component to navigate between them.
-
-### Adding Links
-
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
-
-```tsx
-import { Link } from "@tanstack/react-router";
-```
-
-Then anywhere in your JSX you can use it like so:
-
-```tsx
-<Link to="/about">About</Link>
-```
-
-This will create a link that will navigate to the `/about` route.
-
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
-
-### Using A Layout
-
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you render `{children}` in the `shellComponent`.
-
-Here is an example layout that includes a header:
-
-```tsx
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
-
-export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      { charSet: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'My App' },
-    ],
-  }),
-  shellComponent: ({ children }) => (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        <header>
-          <nav>
-            <Link to="/">Home</Link>
-            <Link to="/about">About</Link>
-          </nav>
-        </header>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  ),
-})
-```
-
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
-
-## Server Functions
-
-TanStack Start provides server functions that allow you to write server-side code that seamlessly integrates with your client components.
-
-```tsx
-import { createServerFn } from '@tanstack/react-start'
-
-const getServerTime = createServerFn({
-  method: 'GET',
-}).handler(async () => {
-  return new Date().toISOString()
-})
-
-// Use in a component
-function MyComponent() {
-  const [time, setTime] = useState('')
-  
-  useEffect(() => {
-    getServerTime().then(setTime)
-  }, [])
-  
-  return <div>Server time: {time}</div>
-}
-```
-
-## API Routes
-
-You can create API routes by using the `server` property in your route definitions:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-import { json } from '@tanstack/react-start'
-
-export const Route = createFileRoute('/api/hello')({
-  server: {
-    handlers: {
-      GET: () => json({ message: 'Hello, World!' }),
-    },
-  },
-})
-```
-
-## Data Fetching
-
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
-
-For example:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-
-export const Route = createFileRoute('/people')({
-  loader: async () => {
-    const response = await fetch('https://swapi.dev/api/people')
-    return response.json()
-  },
-  component: PeopleComponent,
-})
-
-function PeopleComponent() {
-  const data = Route.useLoaderData()
-  return (
-    <ul>
-      {data.results.map((person) => (
-        <li key={person.name}>{person.name}</li>
-      ))}
-    </ul>
-  )
-}
-```
-
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
-
-# Demo files
-
-Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
-
-# Learn More
-
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
-
-For TanStack Start specific documentation, visit [TanStack Start](https://tanstack.com/start).
+*Built at the Anthropic NullHack Hackathon, March 2026.*
