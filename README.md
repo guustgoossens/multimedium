@@ -1,224 +1,128 @@
-Welcome to your new TanStack Start app! 
+# Multimedium
 
-# Getting Started
+**Your AI professor who actually shows you things instead of just talking at you.**
 
-To run this application:
+> "What if ChatGPT went to art school, learned 3D animation, and still somehow graduated with honors in physics?"
+
+## What is this?
+
+Multimedium is an AI-powered visual learning platform that refuses to explain anything with a wall of text. Ask it a question, and instead of typing you an essay, it spins up a 3D talking avatar that narrates the answer while conjuring math animations, particle simulations, and interactive diagrams in real-time.
+
+It's like having a private tutor who moonlights as a VFX artist.
+
+## How it works
+
+1. You ask a question (the easy part)
+2. An AI **director agent** plans a narrative arc — think of it as your personal Spielberg, but for calculus
+3. Specialized **visual sub-agents** render each frame using the best medium for the job (math animations, particle physics, interactive UI)
+4. A 3D avatar narrates the whole thing with lip-synced audio, because reading is *so* 2023
+
+## Features
+
+- **3D Talking Avatar** — A lip-synced speaking head powered by ElevenLabs TTS. It has moods. Don't make it sad.
+- **Manim-style Math Animations** — 3Blue1Brown-inspired animations for equations, graphs, geometry, and proofs. Your math teacher could never.
+- **3D Particle Simulations** — Physics forces, waves, fields, molecular behavior. Basically a tiny universe in your browser.
+- **Interactive UI Components** — Summaries, comparisons, quizzes, and action cards. Learning, but make it clickable.
+- **Multi-Agent Architecture** — A director agent orchestrates visual sub-agents. It's agents all the way down.
+- **Frame Navigation** — Arrow keys, scroll, or click dots. Navigate your explanation like a presentation that doesn't put you to sleep.
+
+## Tech Stack
+
+| Tech | Why |
+|------|-----|
+| **TanStack Start** | React meta-framework for people who like their routing file-based |
+| **Convex** | Backend-as-a-service, because databases should be someone else's problem |
+| **Claude Sonnet 4.6** | The brains of the operation (via Anthropic SDK) |
+| **ElevenLabs** | Text-to-speech with word-level timing, so the avatar doesn't look like a dubbed anime |
+| **Three.js + R3F** | 3D rendering for the avatar and particle sims |
+| **Manim-web** | Mathematical animations that make you feel like you're watching a YouTube video with 10M views |
+| **Tailwind CSS** | Styling for people who think CSS files are a code smell |
+| **Shadcn/ui** | Beautiful components you didn't have to design yourself |
+| **WorkOS AuthKit** | Auth, because not everyone deserves to see your AI professor |
+| **Bun** | Fast. Like, really fast. That's it, that's the pitch. |
+
+## Getting Started
+
+### Prerequisites
+
+- [Bun](https://bun.sh) installed
+- A [Convex](https://convex.dev) account (free tier works)
+- API keys for: Anthropic (Claude), ElevenLabs
+- A [WorkOS](https://workos.com) account for auth
+- Patience (optional but recommended)
+
+### Environment Variables
+
+Create a `.env.local` file in the project root:
+
+```env
+VITE_WORKOS_CLIENT_ID=client_...
+VITE_CONVEX_URL=https://your-deployment.convex.cloud
+CONVEX_DEPLOYMENT=dev:your-deployment
+ELEVENLABS_API_KEY=sk_...
+ELEVENLABS_VOICE_ID=your-voice-id
+ANTHROPIC_API_KEY=sk-ant-...
+```
+
+### Run it
 
 ```bash
+# Install dependencies (grab a coffee, just kidding, Bun is fast)
 bun install
-bun --bun run dev
+
+# Start the Convex backend (in a separate terminal, it likes its space)
+bunx convex dev
+
+# Sync skill definitions to Convex (first time + whenever skills change)
+bun run skills:sync
+
+# Start the dev server
+bun run dev
 ```
 
-# Building For Production
+Open [http://localhost:3000](http://localhost:3000) and ask it something. Go on. It won't bite.
 
-To build this application for production:
+## Available Scripts
 
-```bash
-bun --bun run build
+| Script | What it does |
+|--------|-------------|
+| `bun run dev` | Starts the dev server on port 3000 |
+| `bun run build` | Builds for production (for when you're feeling brave) |
+| `bun run preview` | Preview the production build |
+| `bun run test` | Run tests with Vitest |
+| `bun run lint` | Lint your code (it will judge you) |
+| `bun run format` | Check formatting with Prettier |
+| `bun run check` | Auto-fix linting & formatting (the "fix my mess" button) |
+| `bun run skills:sync` | Sync skill definitions from filesystem to Convex |
+| `bun run skills:sync:dry` | Dry run — see what *would* sync without committing to it |
+
+## Project Structure
+
+```
+multimedium/
+├── src/
+│   ├── routes/               # Pages (file-based routing)
+│   ├── components/           # React components (avatar, frames, renderers)
+│   ├── components/renderers/ # Skill renderers (Manim, UI, Particles)
+│   ├── integrations/         # Convex & WorkOS providers
+│   ├── hooks/                # Custom React hooks
+│   └── lib/                  # Utilities
+├── convex/
+│   ├── agent.ts              # Director & visual sub-agents (the brains)
+│   ├── chat.ts               # Frontend-facing actions
+│   ├── tts.ts                # ElevenLabs TTS integration
+│   ├── explanations.ts       # Visual frame mutations
+│   ├── skills.ts             # Skill management
+│   └── schema.ts             # Database schema
+├── skills/
+│   └── visual/               # Skill definitions (Manim, Particles, UI)
+└── package.json              # The usual suspects
 ```
 
-## Testing
+## Contributing
 
-This project uses [Vitest](https://vitest.dev/) for testing. You can run the tests with:
+Found a bug? Want to add a new visual skill? PRs welcome. Just make sure `bun run check` passes or the CI will publicly shame you.
 
-```bash
-bun --bun run test
-```
+---
 
-## Styling
-
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
-
-### Removing Tailwind CSS
-
-If you prefer not to use Tailwind CSS:
-
-1. Remove the demo pages in `src/routes/demo/`
-2. Replace the Tailwind import in `src/styles.css` with your own styles
-3. Remove `tailwindcss()` from the plugins array in `vite.config.ts`
-4. Uninstall the packages: `bun install @tailwindcss/vite tailwindcss -D`
-
-## Linting & Formatting
-
-
-This project uses [eslint](https://eslint.org/) and [prettier](https://prettier.io/) for linting and formatting. Eslint is configured using [tanstack/eslint-config](https://tanstack.com/config/latest/docs/eslint). The following scripts are available:
-
-```bash
-bun --bun run lint
-bun --bun run format
-bun --bun run check
-```
-
-
-## Setting up WorkOS
-
-- Set the `VITE_WORKOS_CLIENT_ID` in your `.env.local`.
-
-
-## Setting up Convex
-
-- Set the `VITE_CONVEX_URL` and `CONVEX_DEPLOYMENT` environment variables in your `.env.local`. (Or run `bunx --bun convex init` to set them automatically.)
-- Run `bunx --bun convex dev` to start the Convex server.
-
-
-## Shadcn
-
-Add components using the latest version of [Shadcn](https://ui.shadcn.com/).
-
-```bash
-pnpm dlx shadcn@latest add button
-```
-
-
-
-## Routing
-
-This project uses [TanStack Router](https://tanstack.com/router) with file-based routing. Routes are managed as files in `src/routes`.
-
-### Adding A Route
-
-To add a new route to your application just add a new file in the `./src/routes` directory.
-
-TanStack will automatically generate the content of the route file for you.
-
-Now that you have two routes you can use a `Link` component to navigate between them.
-
-### Adding Links
-
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
-
-```tsx
-import { Link } from "@tanstack/react-router";
-```
-
-Then anywhere in your JSX you can use it like so:
-
-```tsx
-<Link to="/about">About</Link>
-```
-
-This will create a link that will navigate to the `/about` route.
-
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
-
-### Using A Layout
-
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you render `{children}` in the `shellComponent`.
-
-Here is an example layout that includes a header:
-
-```tsx
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
-
-export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      { charSet: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'My App' },
-    ],
-  }),
-  shellComponent: ({ children }) => (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        <header>
-          <nav>
-            <Link to="/">Home</Link>
-            <Link to="/about">About</Link>
-          </nav>
-        </header>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  ),
-})
-```
-
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
-
-## Server Functions
-
-TanStack Start provides server functions that allow you to write server-side code that seamlessly integrates with your client components.
-
-```tsx
-import { createServerFn } from '@tanstack/react-start'
-
-const getServerTime = createServerFn({
-  method: 'GET',
-}).handler(async () => {
-  return new Date().toISOString()
-})
-
-// Use in a component
-function MyComponent() {
-  const [time, setTime] = useState('')
-  
-  useEffect(() => {
-    getServerTime().then(setTime)
-  }, [])
-  
-  return <div>Server time: {time}</div>
-}
-```
-
-## API Routes
-
-You can create API routes by using the `server` property in your route definitions:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-import { json } from '@tanstack/react-start'
-
-export const Route = createFileRoute('/api/hello')({
-  server: {
-    handlers: {
-      GET: () => json({ message: 'Hello, World!' }),
-    },
-  },
-})
-```
-
-## Data Fetching
-
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
-
-For example:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-
-export const Route = createFileRoute('/people')({
-  loader: async () => {
-    const response = await fetch('https://swapi.dev/api/people')
-    return response.json()
-  },
-  component: PeopleComponent,
-})
-
-function PeopleComponent() {
-  const data = Route.useLoaderData()
-  return (
-    <ul>
-      {data.results.map((person) => (
-        <li key={person.name}>{person.name}</li>
-      ))}
-    </ul>
-  )
-}
-```
-
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
-
-# Demo files
-
-Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
-
-# Learn More
-
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
-
-For TanStack Start specific documentation, visit [TanStack Start](https://tanstack.com/start).
+*Built with an mass of API keys, questionable amounts of WebGL, and the firm belief that learning should look cooler than a Wikipedia article.*
