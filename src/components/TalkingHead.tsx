@@ -10,6 +10,8 @@ export interface TalkingHeadHandle {
   speak: (text: string) => void
   speakWithAudio: (audioUrl: string, timings: AudioTimings) => void
   stopSpeaking: () => void
+  /** Call from a user-gesture handler to unlock AudioContext before reactive playback */
+  warmUpAudio: () => void
 }
 
 const AVATAR_URL = '/avatars/avatarsdk.glb'
@@ -39,6 +41,13 @@ const TalkingHeadComponent = forwardRef<TalkingHeadHandle>((_, ref) => {
     speak(_text: string) {
       // No-op: lipsync module can't load in Vite/Vercel, so speakText crashes.
       // Real speech uses speakWithAudio with pre-computed timings instead.
+    },
+    warmUpAudio() {
+      // Must be called during a user gesture to unlock AudioContext
+      getAudioContext()
+      if (headRef.current?.audioCtx?.state === 'suspended') {
+        headRef.current.audioCtx.resume()
+      }
     },
     stopSpeaking() {
       headRef.current?.stopSpeaking()

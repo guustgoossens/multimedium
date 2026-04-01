@@ -87,6 +87,8 @@ function App() {
     if (loadingRef.current) return
     setIsLoading(true)
 
+    // Unlock AudioContext during this user gesture so reactive playback works
+    headRef.current?.warmUpAudio()
     // Immediately animate the avatar with user text
     headRef.current?.speak(text)
 
