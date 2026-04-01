@@ -21,7 +21,7 @@ export function FrameContainer({
 }) {
   // Filter out _done markers, but track if generation is complete
   const isDone = explanations.some((e) => e.skill === '_done')
-  const visuals = explanations.filter((e) => e.skill !== '_done')
+  const visuals = explanations.filter((e) => e.skill !== '_done' && e.skill !== 'intro')
 
   const sorted = [...visuals].sort((a, b) => {
     if (a.step != null && b.step != null) return a.step - b.step

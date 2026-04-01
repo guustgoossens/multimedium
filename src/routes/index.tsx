@@ -48,14 +48,31 @@ function App() {
   }, [doneCount])
 
   // Speak narrations on the avatar — play ElevenLabs audio when it arrives
+  // Sort by step so intro (step=0) always plays before main frames (step>=1)
   useEffect(() => {
     if (!explanations || !headRef.current) return
 
-    for (const exp of explanations) {
+    const sorted = [...explanations].sort((a, b) => {
+      const sa = a.step ?? Infinity
+      const sb = b.step ?? Infinity
+      if (sa !== sb) return sa - sb
+      return a._creationTime - b._creationTime
+    })
+
+    // Check if there's a pending intro whose audio hasn't been queued yet — if so,
+    // block all other audio until the intro is ready and queued first
+    const pendingIntro = sorted.find(
+      (e) => e.skill === 'intro' && !audioPlayedIds.current.has(e._id)
+    )
+    const introReady = !pendingIntro || (pendingIntro.audioUrl && pendingIntro.audioTimings)
+
+    for (const exp of sorted) {
       const id = exp._id
 
       // If audio just became available for an explanation we haven't audio-played yet, play it
       if (exp.audioUrl && exp.audioTimings && !audioPlayedIds.current.has(id)) {
+        // Don't play non-intro audio until the intro audio has been queued
+        if (exp.skill !== 'intro' && !introReady) break
         audioPlayedIds.current.add(id)
         headRef.current.speakWithAudio(exp.audioUrl, JSON.parse(exp.audioTimings))
       }
