@@ -40,7 +40,7 @@ function renderNode(node: JsonNode | string, key: number): ReactNode {
 
 function Stack({ children, gap = 4, align }: { children: ReactNode; gap?: number; align?: string }) {
   return (
-    <div className={`flex flex-col gap-${gap} ${align ? `items-${align}` : ''}`} style={{ gap: `${gap * 4}px` }}>
+    <div className={`flex flex-col min-w-0 gap-${gap} ${align ? `items-${align}` : ''}`} style={{ gap: `${gap * 4}px` }}>
       {children}
     </div>
   )
@@ -49,7 +49,7 @@ function Stack({ children, gap = 4, align }: { children: ReactNode; gap?: number
 function Grid({ children, columns = 2, gap = 4 }: { children: ReactNode; columns?: number; gap?: number }) {
   return (
     <div
-      className="grid"
+      className="grid min-w-0"
       style={{
         gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
         gap: `${gap * 4}px`,
@@ -65,7 +65,7 @@ function Flex({ children, direction = 'row', gap = 4, justify, align }: {
 }) {
   return (
     <div
-      className="flex flex-wrap"
+      className="flex flex-wrap min-w-0"
       style={{
         flexDirection: direction as any,
         gap: `${gap * 4}px`,
@@ -89,7 +89,7 @@ function Heading({ children, level = 2 }: { children: ReactNode; level?: number 
     5: 'text-base font-semibold',
     6: 'text-sm font-semibold',
   }
-  const cls = `${sizes[level] || sizes[2]} text-white tracking-tight`
+  const cls = `${sizes[level] || sizes[2]} text-white tracking-tight break-words`
   if (level === 1) return <h1 className={cls}>{children}</h1>
   if (level === 3) return <h3 className={cls}>{children}</h3>
   if (level === 4) return <h4 className={cls}>{children}</h4>
@@ -100,7 +100,7 @@ function Text({ children, size, weight }: {
   children: ReactNode; size?: string; color?: string; weight?: string
 }) {
   return (
-    <p className={`${size === 'sm' ? 'text-sm' : size === 'lg' ? 'text-lg' : 'text-base'} text-gray-300 leading-relaxed ${weight === 'bold' ? 'font-bold' : ''}`}>
+    <p className={`${size === 'sm' ? 'text-sm' : size === 'lg' ? 'text-lg' : 'text-base'} text-gray-300 leading-relaxed break-words ${weight === 'bold' ? 'font-bold' : ''}`}>
       {children}
     </p>
   )
@@ -125,7 +125,7 @@ function Badge({ children, variant = 'blue' }: { children: ReactNode; variant?: 
 
 function Code({ children }: { children: ReactNode; language?: string }) {
   return (
-    <pre className="rounded-xl bg-gray-900/80 border border-white/5 p-4 overflow-x-auto">
+    <pre className="rounded-xl bg-gray-900/80 border border-white/5 p-4 overflow-x-auto max-w-full">
       <code className="text-sm text-gray-200 font-mono">{children}</code>
     </pre>
   )
@@ -140,7 +140,7 @@ function Card({ children, variant = 'outlined' }: { children: ReactNode; variant
     elevated: 'glass-card shadow-lg shadow-black/20',
   }
   return (
-    <div className={`${styles[variant] || styles.outlined} p-5`}>
+    <div className={`${styles[variant] || styles.outlined} p-5 min-w-0 break-words`}>
       {children}
     </div>
   )

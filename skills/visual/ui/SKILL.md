@@ -104,3 +104,6 @@ Example ActionCard usage:
 5. Use Tabs for multiple facets of the same concept
 6. Prefer cards over paragraphs for chunked information
 7. ALWAYS end explanations with a final renderVisual call containing 3-5 ActionCards as next steps. This is the primary way users navigate — text input is secondary. Include options like: quiz me, go deeper, show example, explain related concept.
+8. Headings must be ≤ 60 characters. If the topic title is longer, split it into a short `Heading` plus a `Text` subtitle below.
+9. Use `Grid` with `columns: 3` only when each card body is ≤ 80 characters. For longer card bodies use `columns: 2`, or drop the Grid and stack the cards in a `Stack`.
+10. Never put multi-line, formula-like, or code-like text inside a Grid cell — use a full-width `Card` inside a `Stack` instead. Long unbroken tokens (e.g. `R̂_n(F)`) will overflow narrow grid cells.

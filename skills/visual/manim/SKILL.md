@@ -44,7 +44,7 @@ Call `renderVisual` with skill "manim" and config as a JSON string:
           "type": "latex",
           "id": "formula",
           "expression": "\\frac{d}{dx} x^2 = 2x",
-          "position": [0, -2]
+          "position": [0, -3.5]
         }
       ],
       "animations": [
@@ -90,3 +90,6 @@ Call `renderVisual` with skill "manim" and config as a JSON string:
 4. Include LaTeX for all mathematical expressions
 5. Keep individual scenes under 30 seconds of animation
 6. Use `wait` animations to let viewers absorb information
+7. When a scene contains a `function_graph` or `coordinate_system`, place all `latex` and `text` objects in the margin: `|y| ≥ 3` **or** `|x| ≥ 4`. Treat the inner box `[-3, 3] × [-2, 2]` as the plot zone — never put a label there, it will overlap the curve.
+8. Use `coordinate_system` first to anchor the visible bounds (default `xRange: [-5, 5]`, `yRange: [-4, 4]`). Build the plot inside, labels outside.
+9. Prefer one formula visible at a time. Before fading in a new `latex` object, `fadeOut` the previous one so they never stack on top of each other.

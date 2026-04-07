@@ -173,9 +173,29 @@ export function ManimRenderer({ config }: { config: SceneConfig }) {
   const onSceneReady = useCallback(async (scene: Scene) => {
     const objects = new Map<string, Mobject>()
 
+    // Defensive: if the scene has a graph/coordinate system, nudge any
+    // text/latex labels out of the plot zone so the LLM can't overlap them.
+    const hasPlot = sceneDef.objects.some(
+      (o) => o.type === 'function_graph' || o.type === 'coordinate_system' || o.type === 'axes',
+    )
+    const PLOT_X = 3
+    const PLOT_Y = 2
+    const SAFE_Y = 3.5
+    const nudge = (pos: any): any => {
+      if (!Array.isArray(pos) || pos.length < 2) return pos
+      const [x, y, z] = pos
+      if (Math.abs(x) >= PLOT_X + 1 || Math.abs(y) >= PLOT_Y + 1) return pos
+      const newY = y === 0 ? -SAFE_Y : Math.sign(y) * SAFE_Y
+      return z != null ? [x, newY, z] : [x, newY]
+    }
+
     // Create all objects
     for (const def of sceneDef.objects) {
-      const obj = createObject(def)
+      const safeDef =
+        hasPlot && (def.type === 'latex' || def.type === 'text') && def.position
+          ? { ...def, position: nudge(def.position) }
+          : def
+      const obj = createObject(safeDef)
       if (obj) objects.set(def.id, obj)
     }
 
@@ -194,7 +214,7 @@ export function ManimRenderer({ config }: { config: SceneConfig }) {
   }, [sceneDef])
 
   return (
-    <div className="glass-card overflow-hidden" style={{ aspectRatio: '16 / 9' }}>
+    <div className="glass-card overflow-hidden manim-scene" data-no-frame-scroll style={{ aspectRatio: '16 / 9' }}>
       <ManimScene
         width={960}
         height={540}

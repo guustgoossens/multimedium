@@ -77,38 +77,68 @@ export function FrameContainer({
     return () => window.removeEventListener('keydown', handleKey)
   }, [goNext, goPrev])
 
-  // Wheel navigation — only switch frames at scroll boundaries
+  // Wheel navigation — only switch frames on a deliberate overscroll gesture.
   useEffect(() => {
     let accumulated = 0
-    const threshold = 60
+    let lastDir = 0
+    let lastWheelAt = 0
+    let lastInFrameScrollAt = 0
+    let switchCooldownUntil = 0
+    const THRESHOLD = 180
+    const IDLE_RESET_MS = 250
+    const POST_INFRAME_QUIET_MS = 300
+    const SWITCH_COOLDOWN_MS = 400
 
     const handleWheel = (e: WheelEvent) => {
-      // Find the active frame element
+      // Ignore pinch-zoom and ⌘/ctrl-scroll zoom gestures.
+      if (e.ctrlKey || e.metaKey) return
+
+      // Let interactive embeds (manim canvas, code blocks, anything opted out)
+      // handle their own wheel/zoom events.
+      const target = e.target as Element | null
+      if (target?.closest?.('canvas, .manim-scene, pre, [data-no-frame-scroll]')) return
+
       const container = containerRef.current
       if (!container) return
       const activeFrame = container.querySelector('.frame.active') as HTMLElement | null
       if (!activeFrame) { e.preventDefault(); return }
+
+      const now = performance.now()
+
+      // Reset accumulator on idle or direction flip.
+      if (now - lastWheelAt > IDLE_RESET_MS) accumulated = 0
+      const dir = Math.sign(e.deltaY)
+      if (dir !== 0 && lastDir !== 0 && dir !== lastDir) accumulated = 0
+      if (dir !== 0) lastDir = dir
+      lastWheelAt = now
 
       const { scrollTop, scrollHeight, clientHeight } = activeFrame
       const atTop = scrollTop <= 0
       const atBottom = scrollTop + clientHeight >= scrollHeight - 1
       const isScrollable = scrollHeight > clientHeight + 1
 
-      // If frame has internal scroll and we're not at a boundary, let it scroll normally
+      // Inside in-frame scroll range — let the browser scroll normally and
+      // remember when we last did so, so the inertial tail can't bleed into
+      // a frame switch.
       if (isScrollable) {
-        if (e.deltaY > 0 && !atBottom) return
-        if (e.deltaY < 0 && !atTop) return
+        if (e.deltaY > 0 && !atBottom) { lastInFrameScrollAt = now; accumulated = 0; return }
+        if (e.deltaY < 0 && !atTop) { lastInFrameScrollAt = now; accumulated = 0; return }
       }
 
-      // At boundary or non-scrollable — switch frames
+      // At a boundary. Suppress for the inertial tail of an in-frame scroll
+      // and during the post-switch cooldown.
+      if (now - lastInFrameScrollAt < POST_INFRAME_QUIET_MS) { e.preventDefault(); return }
+      if (now < switchCooldownUntil) { e.preventDefault(); return }
+
       e.preventDefault()
       accumulated += e.deltaY
-      while (accumulated >= threshold) {
-        accumulated -= threshold
+      if (accumulated >= THRESHOLD) {
+        accumulated = 0
+        switchCooldownUntil = now + SWITCH_COOLDOWN_MS
         goNext()
-      }
-      while (accumulated <= -threshold) {
-        accumulated += threshold
+      } else if (accumulated <= -THRESHOLD) {
+        accumulated = 0
+        switchCooldownUntil = now + SWITCH_COOLDOWN_MS
         goPrev()
       }
     }

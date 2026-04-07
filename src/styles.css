@@ -385,6 +385,7 @@ a {
   opacity: 0;
   pointer-events: none;
   transition: opacity 150ms ease;
+  overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
 }
@@ -396,8 +397,12 @@ a {
 
 .frame-content {
   width: min(900px, 100%);
+  max-width: 100%;
+  min-width: 0;
   position: relative;
   z-index: 1;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
 }
 
 .glass-input {
