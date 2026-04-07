@@ -92,4 +92,7 @@ Call `renderVisual` with skill "manim" and config as a JSON string:
 6. Use `wait` animations to let viewers absorb information
 7. When a scene contains a `function_graph` or `coordinate_system`, place all `latex` and `text` objects in the margin: `|y| ≥ 3` **or** `|x| ≥ 4`. Treat the inner box `[-3, 3] × [-2, 2]` as the plot zone — never put a label there, it will overlap the curve.
 8. Use `coordinate_system` first to anchor the visible bounds (default `xRange: [-5, 5]`, `yRange: [-4, 4]`). Build the plot inside, labels outside.
-9. Prefer one formula visible at a time. Before fading in a new `latex` object, `fadeOut` the previous one so they never stack on top of each other.
+9. **Formula width budget.** A `latex` expression must fit within roughly 8 units of canvas width. If your expression is longer than ~25 LaTeX tokens (e.g. nested fractions, sums, subscripts, big operators), simplify it, split it across multiple scenes, or break it into smaller pieces shown in sequence. Oversized formulas will overlap everything else.
+10. **One large formula at a time.** Never have two large `latex` objects visible simultaneously. Before showing a new formula, `fadeOut` the previous one.
+11. **Don't mix dense annotations with a large formula.** If a scene has many point/coordinate labels (e.g. `x1`, `x2`, `+1`, `-1`), it should not also display a large formula in the same step — they compete for space. Sequence them: show the labeled scene, fade the labels out, then introduce the formula.
+12. **Mobject budget.** Aim for ≤ 6 simultaneously-visible mobjects per scene step. If you need more, sequence them with `fadeIn` / `fadeOut` rather than stacking.

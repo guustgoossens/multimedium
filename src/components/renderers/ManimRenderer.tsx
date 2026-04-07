@@ -190,13 +190,30 @@ export function ManimRenderer({ config }: { config: SceneConfig }) {
     }
 
     // Create all objects
+    const MAX_LABEL_WIDTH = 8 // units, ~half of the 16:9 manim canvas width
     for (const def of sceneDef.objects) {
       const safeDef =
         hasPlot && (def.type === 'latex' || def.type === 'text') && def.position
           ? { ...def, position: nudge(def.position) }
           : def
       const obj = createObject(safeDef)
-      if (obj) objects.set(def.id, obj)
+      if (!obj) continue
+
+      // Defensive width clamp: oversized formulas/labels overflow the canvas
+      // and overlap whatever else is on screen. Scale them down in place.
+      if (def.type === 'latex' || def.type === 'text') {
+        try {
+          const bbox = (obj as any).getBoundingBox?.()
+          if (bbox && bbox.width > MAX_LABEL_WIDTH) {
+            const factor = MAX_LABEL_WIDTH / bbox.width
+            ;(obj as any).scale?.(factor)
+          }
+        } catch {
+          // ignore — defensive only
+        }
+      }
+
+      objects.set(def.id, obj)
     }
 
     // Play animations
