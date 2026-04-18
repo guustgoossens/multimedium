@@ -10,6 +10,22 @@ Built by [Guust Goossens](https://github.com/guustgoossens), [Elias Teikari](htt
 
 ---
 
+## Screenshots
+
+### Ask Anything — Landing Page
+![Landing page with talking avatar and prompt input](docs/screenshots/Multimedium_1.jpeg)
+
+### Concept Diagrams — Classical Bits vs Qubits
+![Visual breakdown of classical bits vs qubits with quantum computer architecture layers](docs/screenshots/Multimedium_2.jpeg)
+
+### Particle Simulations — Quantum Interference
+![Particle simulation illustrating Grover's and Shor's quantum algorithms](docs/screenshots/Multimedium_3.jpeg)
+
+### Key Takeaways — The Four Pillars
+![Summary concept map covering superposition, entanglement, interference, and quantum gates](docs/screenshots/Multimedium_4.jpeg)
+
+---
+
 ## The Problem
 
 School is broken. It's text-based, one-directional, and treats every student the same — even though decades of research show that visual, personalized learning is dramatically more effective.
